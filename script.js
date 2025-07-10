@@ -1,0 +1,1 @@
+(function () {   'use strict';    function init() {     console.log('To-Do List initialized');   }    document.addEventListener('DOMContentLoaded', init); })();
