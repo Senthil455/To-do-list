@@ -1,7 +1,17 @@
 (function () {
   "use strict";
+  const taskForm = document.getElementById("task-form");
+  const taskInput = document.getElementById("task-input");
+  function handleAddTask(e) {
+    e.preventDefault();
+    const title = taskInput.value.trim();
+    if (!title) return;
+    console.log("Adding task:", title);
+    taskInput.value = "";
+    taskInput.focus();
+  }
   function init() {
-    console.log("To-Do List initialized");
+    taskForm.addEventListener("submit", handleAddTask);
   }
   document.addEventListener("DOMContentLoaded", init);
 })();
