@@ -2,10 +2,21 @@
   "use strict";
   const taskForm = document.getElementById("task-form");
   const taskInput = document.getElementById("task-input");
+  function showValidationError() {
+    taskInput.classList.add("input-error");
+    taskInput.placeholder = "Please enter a task name";
+    setTimeout(function () {
+      taskInput.classList.remove("input-error");
+      taskInput.placeholder = "Enter a new task...";
+    }, 2000);
+  }
   function handleAddTask(e) {
     e.preventDefault();
     const title = taskInput.value.trim();
-    if (!title) return;
+    if (!title) {
+      showValidationError();
+      return;
+    }
     console.log("Adding task:", title);
     taskInput.value = "";
     taskInput.focus();
