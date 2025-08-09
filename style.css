@@ -88,4 +88,31 @@ body {
 }
 .btn-primary:hover {
   background-color: var(--color-primary-hover);
+} /* ---- Task List ---- */
+.task-list-section {
+  margin-top: 1.5rem;
+}
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s;
+}
+.task-item:hover {
+  box-shadow: var(--shadow-md);
+}
+.task-text {
+  flex: 1;
+  font-size: 1rem;
 }
