@@ -1,16 +1,37 @@
 (function () {
   "use strict";
+  var STORAGE_KEY = "todo_tasks";
   var tasks = [];
   var taskForm = document.getElementById("task-form");
   var taskInput = document.getElementById("task-input");
   var taskList = document.getElementById("task-list");
+  function loadTasks() {
+    try {
+      var stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        tasks = JSON.parse(stored);
+      }
+    } catch (e) {
+      tasks = [];
+    }
+  }
+  function saveTasks() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }
   function renderTasks() {
     taskList.innerHTML = "";
     tasks.forEach(function (task, index) {
       var li = document.createElement("li");
-      li.className = "task-item";
+      li.className = "task-item" + (task.completed ? " completed" : "");
       li.innerHTML =
-        '<span class="task-text">' + escapeHtml(task.title) + "</span>";
+        '<button class="btn-icon toggle-btn" data-index="' +
+        index +
+        '">' +
+        (task.completed ? "&#10003;" : "&#9673;") +
+        "</button>" +
+        '<span class="task-text">' +
+        escapeHtml(task.title) +
+        "</span>";
       li.dataset.index = index;
       taskList.appendChild(li);
     });
@@ -28,6 +49,7 @@
       return;
     }
     tasks.push({ id: Date.now(), title: title, completed: false });
+    saveTasks();
     renderTasks();
     taskInput.value = "";
     taskInput.focus();
@@ -41,6 +63,8 @@
     }, 2000);
   }
   function init() {
+    loadTasks();
+    renderTasks();
     taskForm.addEventListener("submit", handleAddTask);
   }
   document.addEventListener("DOMContentLoaded", init);
