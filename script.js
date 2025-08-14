@@ -54,6 +54,14 @@
     taskInput.value = "";
     taskInput.focus();
   }
+  function handleTaskClick(e) {
+    var toggleBtn = e.target.closest(".toggle-btn");
+    if (!toggleBtn) return;
+    var index = parseInt(toggleBtn.dataset.index, 10);
+    tasks[index].completed = !tasks[index].completed;
+    saveTasks();
+    renderTasks();
+  }
   function showValidationError() {
     taskInput.classList.add("input-error");
     taskInput.placeholder = "Please enter a task name";
@@ -66,6 +74,7 @@
     loadTasks();
     renderTasks();
     taskForm.addEventListener("submit", handleAddTask);
+    taskList.addEventListener("click", handleTaskClick);
   }
   document.addEventListener("DOMContentLoaded", init);
 })();
