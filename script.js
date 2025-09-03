@@ -31,7 +31,10 @@
         "</button>" +
         '<span class="task-text">' +
         escapeHtml(task.title) +
-        "</span>";
+        "</span>" +
+        '<button class="btn-icon delete-btn" data-index="' +
+        index +
+        '" title="Delete task">&#10005;</button>';
       li.dataset.index = index;
       taskList.appendChild(li);
     });
@@ -56,11 +59,22 @@
   }
   function handleTaskClick(e) {
     var toggleBtn = e.target.closest(".toggle-btn");
-    if (!toggleBtn) return;
-    var index = parseInt(toggleBtn.dataset.index, 10);
-    tasks[index].completed = !tasks[index].completed;
-    saveTasks();
-    renderTasks();
+    if (toggleBtn) {
+      var index = parseInt(toggleBtn.dataset.index, 10);
+      tasks[index].completed = !tasks[index].completed;
+      saveTasks();
+      renderTasks();
+      return;
+    }
+    var deleteBtn = e.target.closest(".delete-btn");
+    if (deleteBtn) {
+      var idx = parseInt(deleteBtn.dataset.index, 10);
+      if (confirm("Delete this task?")) {
+        tasks.splice(idx, 1);
+        saveTasks();
+        renderTasks();
+      }
+    }
   }
   function showValidationError() {
     taskInput.classList.add("input-error");
