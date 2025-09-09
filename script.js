@@ -1,6 +1,7 @@
 (function () {
   "use strict";
   var STORAGE_KEY = "todo_tasks";
+  var currentFilter = "all";
   var tasks = [];
   var taskForm = document.getElementById("task-form");
   var taskInput = document.getElementById("task-input");
@@ -18,24 +19,37 @@
   function saveTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
   }
+  function getFilteredTasks() {
+    if (currentFilter === "active") {
+      return tasks.filter(function (t) {
+        return !t.completed;
+      });
+    }
+    if (currentFilter === "completed") {
+      return tasks.filter(function (t) {
+        return t.completed;
+      });
+    }
+    return tasks;
+  }
   function renderTasks() {
+    var filtered = getFilteredTasks();
     taskList.innerHTML = "";
-    tasks.forEach(function (task, index) {
+    filtered.forEach(function (task, index) {
       var li = document.createElement("li");
       li.className = "task-item" + (task.completed ? " completed" : "");
       li.innerHTML =
-        '<button class="btn-icon toggle-btn" data-index="' +
-        index +
+        '<button class="btn-icon toggle-btn" data-id="' +
+        task.id +
         '">' +
         (task.completed ? "&#10003;" : "&#9673;") +
         "</button>" +
         '<span class="task-text">' +
         escapeHtml(task.title) +
         "</span>" +
-        '<button class="btn-icon delete-btn" data-index="' +
-        index +
+        '<button class="btn-icon delete-btn" data-id="' +
+        task.id +
         '" title="Delete task">&#10005;</button>';
-      li.dataset.index = index;
       taskList.appendChild(li);
     });
   }
@@ -60,21 +74,38 @@
   function handleTaskClick(e) {
     var toggleBtn = e.target.closest(".toggle-btn");
     if (toggleBtn) {
-      var index = parseInt(toggleBtn.dataset.index, 10);
-      tasks[index].completed = !tasks[index].completed;
-      saveTasks();
-      renderTasks();
+      var id = parseInt(toggleBtn.dataset.id, 10);
+      var task = tasks.find(function (t) {
+        return t.id === id;
+      });
+      if (task) {
+        task.completed = !task.completed;
+        saveTasks();
+        renderTasks();
+      }
       return;
     }
     var deleteBtn = e.target.closest(".delete-btn");
     if (deleteBtn) {
-      var idx = parseInt(deleteBtn.dataset.index, 10);
+      var delId = parseInt(deleteBtn.dataset.id, 10);
       if (confirm("Delete this task?")) {
-        tasks.splice(idx, 1);
+        tasks = tasks.filter(function (t) {
+          return t.id !== delId;
+        });
         saveTasks();
         renderTasks();
       }
     }
+  }
+  function handleFilterClick(e) {
+    var btn = e.target.closest(".btn-filter");
+    if (!btn) return;
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll(".btn-filter").forEach(function (b) {
+      b.classList.remove("active");
+    });
+    btn.classList.add("active");
+    renderTasks();
   }
   function showValidationError() {
     taskInput.classList.add("input-error");
@@ -89,6 +120,9 @@
     renderTasks();
     taskForm.addEventListener("submit", handleAddTask);
     taskList.addEventListener("click", handleTaskClick);
+    document
+      .querySelector(".filter-group")
+      .addEventListener("click", handleFilterClick);
   }
   document.addEventListener("DOMContentLoaded", init);
 })();
