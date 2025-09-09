@@ -6,6 +6,7 @@
   var taskForm = document.getElementById("task-form");
   var taskInput = document.getElementById("task-input");
   var taskList = document.getElementById("task-list");
+  var taskCount = document.getElementById("task-count");
   function loadTasks() {
     try {
       var stored = localStorage.getItem(STORAGE_KEY);
@@ -32,6 +33,13 @@
     }
     return tasks;
   }
+  function updateTaskCount() {
+    var remaining = tasks.filter(function (t) {
+      return !t.completed;
+    }).length;
+    taskCount.textContent =
+      remaining + " item" + (remaining !== 1 ? "s" : "") + " remaining";
+  }
   function renderTasks() {
     var filtered = getFilteredTasks();
     taskList.innerHTML = "";
@@ -52,6 +60,7 @@
         '" title="Delete task">&#10005;</button>';
       taskList.appendChild(li);
     });
+    updateTaskCount();
   }
   function escapeHtml(text) {
     var div = document.createElement("div");
