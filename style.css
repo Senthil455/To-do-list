@@ -130,6 +130,14 @@ body {
 .btn-filter.active {
   background-color: var(--color-primary);
   color: #fff;
+} /* ---- Task Stats ---- */
+.task-stats {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+.task-count {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
 } /* ---- Task List ---- */
 .task-list-section {
   margin-top: 1.5rem;
@@ -179,4 +187,22 @@ body {
   font-size: 0.875rem;
   border-top: 1px solid var(--color-border);
   margin-top: 2rem;
+} /* ---- Responsive ---- */
+@media (max-width: 480px) {
+  .task-form {
+    flex-direction: column;
+  }
+  .btn-primary {
+    width: 100%;
+  }
+  .app-title {
+    font-size: 1.25rem;
+  }
+  .filter-group {
+    width: 100%;
+  }
+  .btn-filter {
+    flex: 1;
+    text-align: center;
+  }
 }
