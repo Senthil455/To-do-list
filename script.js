@@ -1,6 +1,7 @@
 (function () {
   "use strict";
   var STORAGE_KEY = "todo_tasks";
+  var FILTER_KEY = "todo_filter";
   var currentFilter = "all";
   var tasks = [];
   var taskForm = document.getElementById("task-form");
@@ -19,6 +20,19 @@
   }
   function saveTasks() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  }
+  function loadFilter() {
+    try {
+      var saved = localStorage.getItem(FILTER_KEY);
+      if (saved) {
+        currentFilter = saved;
+      }
+    } catch (e) {
+      currentFilter = "all";
+    }
+  }
+  function saveFilter() {
+    localStorage.setItem(FILTER_KEY, currentFilter);
   }
   function getFilteredTasks() {
     if (currentFilter === "active") {
@@ -39,6 +53,11 @@
     }).length;
     taskCount.textContent =
       remaining + " item" + (remaining !== 1 ? "s" : "") + " remaining";
+  }
+  function setActiveFilter(filter) {
+    document.querySelectorAll(".btn-filter").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.filter === filter);
+    });
   }
   function renderTasks() {
     var filtered = getFilteredTasks();
@@ -110,10 +129,8 @@
     var btn = e.target.closest(".btn-filter");
     if (!btn) return;
     currentFilter = btn.dataset.filter;
-    document.querySelectorAll(".btn-filter").forEach(function (b) {
-      b.classList.remove("active");
-    });
-    btn.classList.add("active");
+    saveFilter();
+    setActiveFilter(currentFilter);
     renderTasks();
   }
   function showValidationError() {
@@ -126,6 +143,8 @@
   }
   function init() {
     loadTasks();
+    loadFilter();
+    setActiveFilter(currentFilter);
     renderTasks();
     taskForm.addEventListener("submit", handleAddTask);
     taskList.addEventListener("click", handleTaskClick);
