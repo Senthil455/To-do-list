@@ -8,6 +8,17 @@
   var taskInput = document.getElementById("task-input");
   var taskList = document.getElementById("task-list");
   var taskCount = document.getElementById("task-count");
+  function debounce(fn, delay) {
+    var timer = null;
+    return function () {
+      var args = arguments;
+      var ctx = this;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        fn.apply(ctx, args);
+      }, delay);
+    };
+  }
   function loadTasks() {
     try {
       var stored = localStorage.getItem(STORAGE_KEY);
@@ -151,6 +162,12 @@
     document
       .querySelector(".filter-group")
       .addEventListener("click", handleFilterClick);
+    window.addEventListener(
+      "resize",
+      debounce(function () {
+        console.log("Viewport resized: " + window.innerWidth + "px");
+      }, 250),
+    );
   }
   document.addEventListener("DOMContentLoaded", init);
 })();
