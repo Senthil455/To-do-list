@@ -165,6 +165,12 @@
     setActiveFilter(currentFilter);
     renderTasks();
   }
+  function handleKeydown(e) {
+    if (e.key === "Escape") {
+      taskInput.value = "";
+      taskInput.blur();
+    }
+  }
   function init() {
     loadTasks();
     loadFilter();
@@ -175,6 +181,7 @@
     document
       .querySelector(".filter-group")
       .addEventListener("click", handleFilterClick);
+    taskInput.addEventListener("keydown", handleKeydown);
     window.addEventListener(
       "resize",
       debounce(function () {
