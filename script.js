@@ -99,11 +99,21 @@
     div.appendChild(document.createTextNode(text));
     return div.innerHTML;
   }
+  function isDuplicate(title) {
+    var lower = title.toLowerCase();
+    return tasks.some(function (t) {
+      return t.title.toLowerCase() === lower;
+    });
+  }
   function handleAddTask(e) {
     e.preventDefault();
     var title = taskInput.value.trim();
     if (!title) {
-      showValidationError();
+      showValidationError("Please enter a task name");
+      return;
+    }
+    if (isDuplicate(title)) {
+      showValidationError("This task already exists");
       return;
     }
     tasks.push({ id: Date.now(), title: title, completed: false });
@@ -111,6 +121,15 @@
     renderTasks();
     taskInput.value = "";
     taskInput.focus();
+  }
+  function showValidationError(message) {
+    taskInput.classList.add("input-error");
+    taskInput.value = "";
+    taskInput.placeholder = message;
+    setTimeout(function () {
+      taskInput.classList.remove("input-error");
+      taskInput.placeholder = "Enter a new task...";
+    }, 2000);
   }
   function handleTaskClick(e) {
     var toggleBtn = e.target.closest(".toggle-btn");
@@ -145,14 +164,6 @@
     saveFilter();
     setActiveFilter(currentFilter);
     renderTasks();
-  }
-  function showValidationError() {
-    taskInput.classList.add("input-error");
-    taskInput.placeholder = "Please enter a task name";
-    setTimeout(function () {
-      taskInput.classList.remove("input-error");
-      taskInput.placeholder = "Enter a new task...";
-    }, 2000);
   }
   function init() {
     loadTasks();
