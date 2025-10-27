@@ -72,8 +72,8 @@
   }
   function renderTasks() {
     var filtered = getFilteredTasks();
-    taskList.innerHTML = "";
-    filtered.forEach(function (task, index) {
+    var fragment = document.createDocumentFragment();
+    filtered.forEach(function (task) {
       var li = document.createElement("li");
       li.className = "task-item" + (task.completed ? " completed" : "");
       li.innerHTML =
@@ -88,8 +88,10 @@
         '<button class="btn-icon delete-btn" data-id="' +
         task.id +
         '" title="Delete task">&#10005;</button>';
-      taskList.appendChild(li);
+      fragment.appendChild(li);
     });
+    taskList.innerHTML = "";
+    taskList.appendChild(fragment);
     updateTaskCount();
   }
   function escapeHtml(text) {
