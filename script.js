@@ -132,9 +132,9 @@
     }, 2000);
   }
   function handleTaskClick(e) {
-    var toggleBtn = e.target.closest(".toggle-btn");
-    if (toggleBtn) {
-      var id = parseInt(toggleBtn.dataset.id, 10);
+    var target = e.target;
+    if (target.matches(".toggle-btn")) {
+      var id = parseInt(target.dataset.id, 10);
       var task = tasks.find(function (t) {
         return t.id === id;
       });
@@ -145,9 +145,8 @@
       }
       return;
     }
-    var deleteBtn = e.target.closest(".delete-btn");
-    if (deleteBtn) {
-      var delId = parseInt(deleteBtn.dataset.id, 10);
+    if (target.matches(".delete-btn")) {
+      var delId = parseInt(target.dataset.id, 10);
       if (confirm("Delete this task?")) {
         tasks = tasks.filter(function (t) {
           return t.id !== delId;
