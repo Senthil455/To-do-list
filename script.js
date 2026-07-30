@@ -1,192 +1,128 @@
-(function () {
-  "use strict";
-  var STORAGE_KEY = "todo_tasks";
-  var FILTER_KEY = "todo_filter";
-  var currentFilter = "all";
-  var tasks = [];
-  var taskForm = document.getElementById("task-form");
-  var taskInput = document.getElementById("task-input");
-  var taskList = document.getElementById("task-list");
-  var taskCount = document.getElementById("task-count");
-  function debounce(fn, delay) {
-    var timer = null;
-    return function () {
-      var args = arguments;
-      var ctx = this;
-      clearTimeout(timer);
-      timer = setTimeout(function () {
-        fn.apply(ctx, args);
-      }, delay);
-    };
-  }
-  function loadTasks() {
+// yeah this is my todo app
+
+var STORAGE = 'mytodos';
+var tasks = [];
+let currentView = 'all';
+
+const form = document.getElementById('todo-form');
+const input = document.getElementById('todo-input');
+const list = document.getElementById('list');
+const counter = document.getElementById('counter');
+
+function load() {
+  let saved = localStorage.getItem(STORAGE);
+  if (saved) {
     try {
-      var stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        tasks = JSON.parse(stored);
-      }
-    } catch (e) {
+      tasks = JSON.parse(saved);
+    } catch(e) {
       tasks = [];
     }
   }
-  function saveTasks() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+  let view = localStorage.getItem('todo_view');
+  if (view) currentView = view;
+}
+
+function save() {
+  localStorage.setItem(STORAGE, JSON.stringify(tasks));
+  localStorage.setItem('todo_view', currentView);
+}
+
+function filtered() {
+  if (currentView === 'active') {
+    return tasks.filter(t => !t.done);
   }
-  function loadFilter() {
-    try {
-      var saved = localStorage.getItem(FILTER_KEY);
-      if (saved) {
-        currentFilter = saved;
-      }
-    } catch (e) {
-      currentFilter = "all";
+  if (currentView === 'done') {
+    return tasks.filter(t => t.done);
+  }
+  return tasks;
+}
+
+function render() {
+  let items = filtered();
+  list.innerHTML = '';
+  items.forEach(task => {
+    let li = document.createElement('li');
+    li.className = task.done ? 'done' : '';
+    li.innerHTML =
+      '<span class="cb" data-id="' + task.id + '">&#' + (task.done ? '10003' : '9673') + ';</span> ' +
+      '<span class="txt">' + task.title + '</span> ' +
+      '<span class="del" data-id="' + task.id + '">&#10005;</span>';
+    list.appendChild(li);
+  });
+  let left = tasks.filter(t => !t.done).length;
+  counter.textContent = left + ' left';
+}
+
+// highlight current filter
+function highlightView(v) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    if (b.dataset.view === v) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
     }
-  }
-  function saveFilter() {
-    localStorage.setItem(FILTER_KEY, currentFilter);
-  }
-  function getFilteredTasks() {
-    if (currentFilter === "active") {
-      return tasks.filter(function (t) {
-        return !t.completed;
-      });
-    }
-    if (currentFilter === "completed") {
-      return tasks.filter(function (t) {
-        return t.completed;
-      });
-    }
-    return tasks;
-  }
-  function updateTaskCount() {
-    var remaining = tasks.filter(function (t) {
-      return !t.completed;
-    }).length;
-    taskCount.textContent =
-      remaining + " item" + (remaining !== 1 ? "s" : "") + " remaining";
-  }
-  function setActiveFilter(filter) {
-    document.querySelectorAll(".btn-filter").forEach(function (b) {
-      b.classList.toggle("active", b.dataset.filter === filter);
-    });
-  }
-  function renderTasks() {
-    var filtered = getFilteredTasks();
-    var fragment = document.createDocumentFragment();
-    filtered.forEach(function (task) {
-      var li = document.createElement("li");
-      li.className = "task-item" + (task.completed ? " completed" : "");
-      li.innerHTML =
-        '<button class="btn-icon toggle-btn" data-id="' +
-        task.id +
-        '">' +
-        (task.completed ? "&#10003;" : "&#9673;") +
-        "</button>" +
-        '<span class="task-text">' +
-        escapeHtml(task.title) +
-        "</span>" +
-        '<button class="btn-icon delete-btn" data-id="' +
-        task.id +
-        '" title="Delete task">&#10005;</button>';
-      fragment.appendChild(li);
-    });
-    taskList.innerHTML = "";
-    taskList.appendChild(fragment);
-    updateTaskCount();
-  }
-  function escapeHtml(text) {
-    var div = document.createElement("div");
-    div.appendChild(document.createTextNode(text));
-    return div.innerHTML;
-  }
-  function isDuplicate(title) {
-    var lower = title.toLowerCase();
-    return tasks.some(function (t) {
-      return t.title.toLowerCase() === lower;
-    });
-  }
-  function handleAddTask(e) {
-    e.preventDefault();
-    var title = taskInput.value.trim();
-    if (!title) {
-      showValidationError("Please enter a task name");
+  });
+}
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+  let val = input.value.trim();
+  if (!val) return;
+
+  // quick duplicate check
+  for (let i = 0; i < tasks.length; i++) {
+    if (tasks[i].title.toLowerCase() === val.toLowerCase()) {
+      alert('already got that one');
+      input.value = '';
       return;
     }
-    if (isDuplicate(title)) {
-      showValidationError("This task already exists");
-      return;
-    }
-    tasks.push({ id: Date.now(), title: title, completed: false });
-    saveTasks();
-    renderTasks();
-    taskInput.value = "";
-    taskInput.focus();
   }
-  function showValidationError(message) {
-    taskInput.classList.add("input-error");
-    taskInput.value = "";
-    taskInput.placeholder = message;
-    setTimeout(function () {
-      taskInput.classList.remove("input-error");
-      taskInput.placeholder = "Enter a new task...";
-    }, 2000);
-  }
-  function handleTaskClick(e) {
-    var target = e.target;
-    if (target.matches(".toggle-btn")) {
-      var id = parseInt(target.dataset.id, 10);
-      var task = tasks.find(function (t) {
-        return t.id === id;
-      });
-      if (task) {
-        task.completed = !task.completed;
-        saveTasks();
-        renderTasks();
-      }
-      return;
-    }
-    if (target.matches(".delete-btn")) {
-      var delId = parseInt(target.dataset.id, 10);
-      if (confirm("Delete this task?")) {
-        tasks = tasks.filter(function (t) {
-          return t.id !== delId;
-        });
-        saveTasks();
-        renderTasks();
+
+  tasks.push({ id: Date.now(), title: val, done: false });
+  save();
+  render();
+  input.value = '';
+  input.focus();
+});
+
+list.addEventListener('click', function(e) {
+  let target = e.target;
+
+  // toggle done
+  if (target.classList.contains('cb')) {
+    let id = parseInt(target.dataset.id);
+    for (let i = 0; i < tasks.length; i++) {
+      if (tasks[i].id === id) {
+        tasks[i].done = !tasks[i].done;
+        break;
       }
     }
+    save();
+    render();
+    return;
   }
-  function handleFilterClick(e) {
-    var btn = e.target.closest(".btn-filter");
-    if (!btn) return;
-    currentFilter = btn.dataset.filter;
-    saveFilter();
-    setActiveFilter(currentFilter);
-    renderTasks();
+
+  // delete
+  if (target.classList.contains('del')) {
+    let id = parseInt(target.dataset.id);
+    tasks = tasks.filter(t => t.id !== id);
+    save();
+    render();
   }
-  function handleKeydown(e) {
-    if (e.key === "Escape") {
-      taskInput.value = "";
-      taskInput.blur();
-    }
-  }
-  function init() {
-    loadTasks();
-    loadFilter();
-    setActiveFilter(currentFilter);
-    renderTasks();
-    taskForm.addEventListener("submit", handleAddTask);
-    taskList.addEventListener("click", handleTaskClick);
-    document
-      .querySelector(".filter-group")
-      .addEventListener("click", handleFilterClick);
-    taskInput.addEventListener("keydown", handleKeydown);
-    window.addEventListener(
-      "resize",
-      debounce(function () {
-        console.log("Viewport resized: " + window.innerWidth + "px");
-      }, 250),
-    );
-  }
-  document.addEventListener("DOMContentLoaded", init);
-})();
+});
+
+document.querySelector('.filters').addEventListener('click', function(e) {
+  let btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  currentView = btn.dataset.view;
+  save();
+  highlightView(currentView);
+  render();
+});
+
+// eh, might need this later
+console.log('todo app loaded');
+
+load();
+highlightView(currentView);
+render();
